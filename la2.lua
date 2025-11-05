@@ -1,10 +1,11 @@
--- 1. Tentukan di mana harus mencari (di dalam PlayerGui)
+-- 1. Tentukan di mana harus mencari
 local PlayerGui = game.Players.LocalPlayer.PlayerGui
 
--- 2. Cari GUI yang bernama "ContohGuiSaya"
-local GuiYangInginDihapus = PlayerGui:FindFirstChild("ContohGuiSaya")
+-- 2. Cari GUI dengan nama default "ScreenGui"
+local GuiTanpaNama = PlayerGui:FindFirstChild("ScreenGui")
 
--- 3. Jika ditemukan, panggil :Destroy() untuk menghapusnya
-if GuiYangInginDihapus then
-    GuiYangInginDihapus:Destroy()
+-- 3. Hancurkan jika ditemukan
+if GuiTanpaNama then
+    GuiTanpaNama:Destroy()
+    print("GUI dengan nama 'ScreenGui' berhasil dihapus.")
 end

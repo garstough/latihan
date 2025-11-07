@@ -9,9 +9,7 @@
   
   Ini adalah "otak" skrip Anda. Kita harus mengajari skrip
   tanaman apa yang termasuk tipe "Leafy" (atau "Fruit", dll.)
-  
-  Gunakan skrip "Mata-Mata" V2 (Pencari Properti) dari sebelumnya
-  untuk menemukan NAMA PERSIS tanaman Anda.
+
 
 ]]
 local MasterPlantDatabase = {

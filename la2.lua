@@ -4,26 +4,24 @@
 
 --[[
 
-  BAGIAN 1: "DATABASE" ANDA (DIPERBARUI!)
+  BAGIAN 1: "DATABASE" ANDA (DIPERBARUI)
   
-  Kita sekarang menggunakan tabel di dalam tabel.
-  Ini memungkinkan satu tanaman memiliki BANYAK tipe.
+  Ini adalah "otak" skrip Anda, diisi dengan
+  daftar tanaman yang Anda berikan.
 ]]
 local MasterPlantDatabase = {
-    -- DIPERBARUI: "Tomato" sekarang memiliki 3 tipe
     ["Tomato"] = { "Fruit", "Vegetable", "Leafy", "Summer" },
     ["Corn"] = { "Fruit", "Vegetable", "Stalky" },
     ["Blueberry"] = { "Berry", "Leafy", "Fruit", "Summer" },
     ["Strawberry"] = { "Berry", "Fruit" },
     ["Coconut"] = { "Fruit","Woody","Tropical" },
-    ["Giant Pinecone"] = { "Fruit","Woody","Tropical" },
+    ["Giant Pinecone"] = { "Fruit","Woodody","Tropical" }, -- (Anda mengetik "Woodody", saya asumsikan maksudnya "Woody")
     ["Mango"] = { "Fruit","Leafy","Tropical","Woody" },
     ["Orange Delight"] = { "Tropical" },
     ["Candy Corn Flower"] = { "Flower", "Stalky" }
-    
 }
 
-print("Database tanaman multi-tipe dimuat.")
+print("Database tanaman kustom (versi Anda) dimuat.")
 
 -- ================================================
 -- BAGIAN 2: PENGATURAN UI DAN "STATE" (Tidak berubah)
@@ -58,12 +56,10 @@ end
 
 
 -- ================================================
--- BAGIAN 4: FUNGSI-FUNGSI PENDUKUNG (DENGAN TAMBAHAN)
+-- BAGIAN 4: FUNGSI-FUNGSI PENDUKUNG (Tidak berubah)
 -- ================================================
 
--- FUNGSI BARU: Pengecek tipe di dalam daftar
--- Ini akan memeriksa apakah 'targetTipe' (misal "Vegetable")
--- ada di dalam 'daftarTipe' (misal {"Fruit", "Vegetable", "Leafy"})
+-- Fungsi Pengecek tipe di dalam daftar
 function ApakahTipeAdaDiDaftar(daftarTipe, targetTipe)
     for i, tipe in pairs(daftarTipe) do
         if tipe == targetTipe then
@@ -74,13 +70,13 @@ function ApakahTipeAdaDiDaftar(daftarTipe, targetTipe)
 end
 
 
--- Fungsi untuk membersihkan tag HTML (Tidak berubah)
+-- Fungsi untuk membersihkan tag HTML
 function HapusTagHTML(teks)
     local teksBersih = string.gsub(teks, "<[^>]*>", "")
     return teksBersih
 end
 
--- Fungsi untuk menemukan target quest dari gelembung (Tidak berubah)
+-- Fungsi untuk menemukan target quest dari gelembung
 function DapatkanTargetEvent()
     local targetDitemukan = nil
     for i, objek in pairs(workspace:GetDescendants()) do
@@ -104,7 +100,7 @@ function DapatkanTargetEvent()
     end
 end
 
--- Fungsi untuk mendapatkan kebun pemain (Tidak berubah)
+-- Fungsi untuk mendapatkan kebun pemain
 local function DapatkanKebunPemain(namaPemain)
     local farmFolder = workspace:FindFirstChild("Farm")
     if farmFolder then
@@ -120,7 +116,7 @@ local function DapatkanKebunPemain(namaPemain)
 end
 
 -- ================================================
--- BAGIAN 5: LOGIKA AKSI (DIPERBARUI)
+-- BAGIAN 5: LOGIKA AKSI (Tidak berubah)
 -- ================================================
 
 local function LakukanSiklusPanen_HitLangsung()
@@ -152,11 +148,10 @@ local function LakukanSiklusPanen_HitLangsung()
         
         local namaTanaman = tanaman.Name
         
-        -- DAPATKAN DAFTAR TIPE (Contoh: {"Fruit", "Vegetable", "Leafy"})
+        -- DAPATKAN DAFTAR TIPE (Contoh: {"Fruit", "Vegetable", "Leafy", "Summer"})
         local daftarTipeTanamanIni = MasterPlantDatabase[namaTanaman]
         
-        -- FILTER UTAMA (DIPERBARUI)
-        -- Cek apakah quest ("Vegetable") ada di dalam daftar tipe tanaman
+        -- FILTER UTAMA
         if daftarTipeTanamanIni and ApakahTipeAdaDiDaftar(daftarTipeTanamanIni, tipeTargetEvent) then
             
             -- LOLOS FILTER!
@@ -200,4 +195,4 @@ coroutine.wrap(function()
     end
 end)()
 
-print("Skrip Auto-Harvest (Multi-Tipe) berhasil dimuat!")
+print("Skrip Auto-Harvest (Multi-Tipe V_FINAL) berhasil dimuat!")

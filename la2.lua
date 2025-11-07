@@ -1,60 +1,37 @@
 -- ================================================
--- FILE LENGKAP AUTO-HARVEST DINAMIS (VERSI FINAL)
--- (Semua dalam Satu File)
+-- FILE LENGKAP AUTO-HARVEST DINAMIS (VERSI TELEPORT)
 -- ================================================
 
---[[
-
-  BAGIAN 1: "DATABASE" ANDA (WAJIB DIISI!)
-  
-  Ini adalah "otak" skrip Anda. Kita harus mengajari skrip
-  tanaman apa yang termasuk tipe "Leafy" (atau "Fruit", dll.)
-
-
-]]
+-- BAGIAN 1: "DATABASE" ANDA (Sama seperti sebelumnya)
 local MasterPlantDatabase = {
     -- Ganti ini dengan tanaman Anda yang sebenarnya
-    ["Tomato"] = "Leafy",
-    ["NamaTanamanLeafy2"] = "Leafy",
-    
-    -- Contoh dari log Anda sebelumnya
     ["Tomato"] = "Fruit",
     ["Blueberry"] = "Berry",
     ["Strawberry"] = "Berry"
-    
-    -- Tambahkan semua tanaman lain yang Anda tahu di sini
+    -- Tambahkan tanaman lain yang Anda tahu
 }
 
 print("Database tanaman kustom dimuat.")
 
 -- ================================================
--- BAGIAN 2: FUNGSI-FUNGSI PENDUKUNG (DARI INVESTIGASI KITA)
+-- BAGIAN 2: FUNGSI-FUNGSI PENDUKUNG (Sama seperti sebelumnya)
 -- ================================================
 
--- Fungsi untuk membersihkan tag HTML (dari Investigasi V6)
 function HapusTagHTML(teks)
     local teksBersih = string.gsub(teks, "<[^>]*>", "")
     return teksBersih
 end
 
--- Fungsi untuk menemukan target quest dari gelembung (dari Investigasi V6)
 function DapatkanTargetEvent()
-    
     local targetDitemukan = nil
-    
     for i, objek in pairs(workspace:GetDescendants()) do
         if objek:IsA("TextLabel") then
-            -- Cari gelembung quest
             if string.find(objek.Text, "looking for") then
-                
                 local teksBersih = HapusTagHTML(objek.Text)
-                
-                -- Ekstrak tipe dari teks bersih
                 local targetTipe = teksBersih:match("looking for (.*) Plants")
-                
                 if targetTipe then
-                    targetDitemukan = targetTipe -- (Contoh: "Leafy")
-                    break -- Hentikan loop setelah ditemukan
+                    targetDitemukan = targetTipe
+                    break
                 end
             end
         end
@@ -69,7 +46,6 @@ function DapatkanTargetEvent()
     end
 end
 
--- Fungsi untuk mendapatkan kebun pemain (dari skrip autofarm)
 local function DapatkanKebunPemain(namaPemain)
     local farmFolder = workspace:FindFirstChild("Farm")
     if farmFolder then
@@ -85,54 +61,75 @@ local function DapatkanKebunPemain(namaPemain)
 end
 
 -- ================================================
--- BAGIAN 3: LOGIKA UTAMA DAN AKSI
+-- BAGIAN 3: LOGIKA UTAMA (DENGAN LOGIKA TELEPORT)
 -- ================================================
 
 local function HarvestOtomatisBerdasarkanEvent()
     
-    -- 1. Dapatkan tipe target dari gelembung NPC
-    local tipeTargetEvent = DapatkanTargetEvent() -- Ini akan berisi "Leafy"
+    -- 1. Dapatkan tipe target
+    local tipeTargetEvent = DapatkanTargetEvent()
+    if not tipeTargetEvent then return end
     
-    if not tipeTargetEvent then
-        print("Tidak bisa panen, target event tidak ditemukan.")
-        return -- Hentikan fungsi
-    end
-    
-    -- 2. Dapatkan kebun
+    -- 2. Dapatkan kebun DAN karakter pemain
     local pemainLokal = game.Players.LocalPlayer
     local kebunPemain = DapatkanKebunPemain(pemainLokal.Name)
-    if not kebunPemain then return end -- Hentikan jika kebun tidak ada
+    local Character = pemainLokal.Character
+    -- Kita butuh 'HumanoidRootPart' untuk teleportasi
+    local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
+    
+    if not kebunPemain or not HumanoidRootPart then
+        print("Error: Kebun atau HumanoidRootPart tidak ditemukan.")
+        return
+    end
     
     local folderTanaman = kebunPemain.Important.Plants_Physical
-
     print("Memulai filter panen untuk Tipe: " .. tipeTargetEvent)
 
     -- 3. Loop ke setiap tanaman
     for i, tanaman in pairs(folderTanaman:GetChildren()) do
         
         local namaTanaman = tanaman.Name
-        
-        -- 4. Cari tipe tanaman ini di "Database" kita (Bagian 1)
         local tipeTanamanIni = MasterPlantDatabase[namaTanaman]
         
-        -- 5. FILTER UTAMA: Bandingkan tipe tanaman dengan target event
+        -- 4. FILTER UTAMA
         if tipeTanamanIni and tipeTanamanIni == tipeTargetEvent then
             
-            -- LOLOS FILTER! (Contoh: "Leafy" == "Leafy")
-            print("Lolos Filter: " .. namaTanaman .. ". Mencoba memanen...")
+            print("Lolos Filter: " .. namaTanaman .. ". Memeriksa prompt...")
             
-            -- 6. AKSI PANEN (dari skrip autofarm.lua)
+            -- 5. AKSI PANEN (VERSI TELEPORT)
             local prompt = tanaman:FindFirstChild("ProximityPrompt", true)
             if prompt and prompt.Enabled then
+                
+                -- --- PERBAIKAN TELEPORT DIMULAI ---
+                
+                -- A. Simpan lokasi asli Anda
+                local lokasiAsli = HumanoidRootPart.CFrame
+                
+                -- B. Dapatkan lokasi tanaman (naik sedikit agar tidak di dalam tanah)
+                local lokasiTanaman = tanaman:GetPivot().Position + Vector3.new(0, 3, 0)
+                
+                print("Teleport ke: " .. namaTanaman)
+                
+                -- C. TELEPORT karakter ke tanaman
+                Character:SetPrimaryPartCFrame(CFrame.new(lokasiTanaman))
+                
+                -- D. Panen (beri jeda sedikit agar game mendeteksi lokasi baru)
+                wait(0.1) -- Jeda singkat
                 fireproximityprompt(prompt)
-                print("Berhasil memanen " .. namaTanaman)
-                wait(0.5) -- Beri jeda singkat agar tidak spam
-            else
-                print("Gagal panen: " .. namaTanaman .. " (Prompt tidak ditemukan/siap)")
+                print("Berhasil mengirim perintah panen untuk " .. namaTanaman)
+                
+                -- E. TUNGGU sebentar
+                wait(0.2) 
+                
+                -- F. TELEPORT KEMBALI ke lokasi asli
+                Character:SetPrimaryPartCFrame(lokasiAsli)
+                
+                -- G. Beri jeda 1 detik agar game bisa memproses
+                wait(1) 
+                
+                -- --- PERBAIKAN TELEPORT SELESAI ---
+                
             end
-            
-        else
-            -- Gagal filter (Tipenya salah atau tidak ada di database)
         end
     end
     
@@ -143,5 +140,4 @@ end
 -- BAGIAN 4: MEMULAI SKRIP
 -- ================================================
 
--- Panggil fungsi utama untuk menjalankannya
 HarvestOtomatisBerdasarkanEvent()

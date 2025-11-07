@@ -1,33 +1,29 @@
 -- ==========================================
--- SKRIP INVESTIGASI GUI (PENCARI TEKS EVENT)
+-- SKRIP INVESTIGASI NPC (PENCARI PROPERTI QUEST)
 -- ==========================================
 
-print("Memulai pencarian teks di semua GUI...")
+print("Memulai investigasi NPC 'Joyce'...")
 
--- Dapatkan folder GUI pemain
-local PlayerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+-- Temukan NPC "Joyce" di dalam game
+local npcTarget = workspace:FindFirstChild("Joyce")
 
--- :GetDescendants() akan mendapatkan SEMUA objek di dalam PlayerGui
-for i, objek in pairs(PlayerGui:GetDescendants()) do
-
-    -- Kita hanya peduli pada objek yang bisa menampilkan teks
-    if objek:IsA("TextLabel") or objek:IsA("TextButton") then
-
-        -- Periksa apakah teksnya relevan (tidak kosong)
-        local teks = objek.Text
-        if teks ~= "" and teks ~= "Label" and teks ~= "Button" then
-
-            -- Kita cari teks yang MUNGKIN nama tipe (Fruit, Berry, Flower)
-            -- atau bagian dari quest
-            if teks == "Fruit" or teks == "Berry" or teks == "Flower" or string.find(teks, "Harvest") then
-
-                print("=================================")
-                print("TEKS RELEVAN DITEMUKAN: '" .. teks .. "'")
-                print("  --> LOKASI: " .. objek:GetFullName())
-                print("=================================")
-            end
+if npcTarget then
+    print("Berhasil menemukan 'Joyce'. Membaca properti...")
+    
+    -- Kita gunakan :GetDescendants() untuk melihat SEMUA di dalamnya
+    for i, properti in pairs(npcTarget:GetDescendants()) do
+        
+        -- Kita hanya tertarik pada 'Value' (StringValue, IntValue, dll)
+        -- karena di situlah data quest biasanya disimpan
+        if properti:IsA("ValueBase") then
+            print("  > Properti Ditemukan: " .. properti:GetFullName())
+            print("    --> NILAINYA: " .. tostring(properti.Value))
+            print("---------------------------------")
         end
     end
+    
+    print("===== Investigasi NPC Selesai =====")
+    
+else
+    print("Error: Tidak dapat menemukan 'Joyce' di dalam workspace.")
 end
-
-print("===== Pencarian Teks GUI Selesai =====")

@@ -1,12 +1,11 @@
 -- ==========================================
--- SKRIP INVESTIGASI V4 (PENCARI NAMA TEPAT)
+-- SKRIP INVESTIGASI V5 (PENCARI GELEMBUNG QUEST)
 -- ==========================================
 
-print("Memulai Investigasi V4...")
-print("Mencari TextLabel dengan teks 'Safari Joyce'...")
+print("Memulai Investigasi V5...")
+print("Mencari gelembung quest (mencari teks 'looking for')...")
 
 local ditemukan = false
-local targetTeks = "Safari Joyce" -- NAMA YANG BENAR
 
 -- Loop melalui SEMUA objek di dalam game
 for i, objek in pairs(workspace:GetDescendants()) do
@@ -14,49 +13,34 @@ for i, objek in pairs(workspace:GetDescendants()) do
     -- Kita cari TextLabel
     if objek:IsA("TextLabel") then
         
-        -- DI SINI PERUBAHANNYA: Kita cari nama yang tepat
-        if objek.Text == targetTeks then
+        -- DI SINI PERUBAHANNYA:
+        -- Kita tidak lagi menggunakan '=='. Kita gunakan 'string.find'
+        -- untuk mencari apakah teksnya 'mengandung' kata "looking for"
+        if string.find(objek.Text, "looking for") then
+            
             print("=================================")
-            print("DITEMUKAN! 'TextLabel' dengan teks '" .. targetTeks .. "'.")
+            print("DITEMUKAN! Teks quest yang relevan:")
+            print("  --> TEKS LENGKAP: '" .. objek.Text .. "'")
             
-            -- Sekarang, kita cari 'Model' induknya (NPC-nya)
-            local modelInduk = objek
-            while modelInduk.Parent ~= nil and not modelInduk:IsA("Model") do
-                modelInduk = modelInduk.Parent
-            end
+            -- SEKARANG, KITA EKSTRAK TIPENYA!
+            -- Kita ambil teks di antara "looking for " dan " Plants"
+            local targetTipe = objek.Text:match("looking for (.*) Plants")
             
-            if modelInduk:IsA("Model") then
-                print("  --> NAMA MODEL (NPC) ASLI: " .. modelInduk.Name)
-                print("Mulai memindai properti quest di dalam '" .. modelInduk.Name .. "'...")
-                
-                -- PINDAI SEMUA PROPERTI DI DALAM MODEL ITU
-                local propertiQuestDitemukan = false
-                for _, properti in pairs(modelInduk:GetDescendants()) do
-                    
-                    if properti:IsA("ValueBase") then
-                        print("    > Properti Ditemukan: " .. properti.Name)
-                        print("      --> NILAINYA: " .. tostring(properti.Value))
-                        print("    ---------------------------------")
-                        propertiQuestDitemukan = true
-                    end
-                end
-                
-                if not propertiQuestDitemukan then
-                    print("  --> Tidak ada properti 'Value' yang ditemukan di dalam model ini.")
-                end
-                
-                ditemukan = true
+            if targetTipe then
+                print("  --> TARGET QUEST YANG DIEKSTRAK: '" .. targetTipe .. "'")
             else
-                print("  -- Gagal menemukan Model induk dari TextLabel.")
+                print("  -- Gagal mengekstrak tipe dari teks.")
             end
             
             print("=================================")
+            
+            ditemukan = true
             break -- Hentikan loop setelah ditemukan
         end
     end
 end
 
 if not ditemukan then
-    print("Pencarian selesai. 'TextLabel' bernama '" .. targetTeks .. "' tidak ditemukan.")
-    print("PASTIKAN Anda berdiri sangat DEKAT dengan NPC.")
+    print("Pencarian selesai. Tidak ada gelembung quest yang ditemukan.")
+    print("PASTIKAN Anda berdiri DEKAT dengan NPC dan gelembung pikirannya terlihat.")
 end

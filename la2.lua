@@ -1,78 +1,86 @@
 -- ================================================
--- SKRIP AUTO-HARVEST FINAL (METODE HIT LANGSUNG)
+-- SKRIP AUTO-HARVEST (METODE HIT LANGSUNG & MULTI-TIPE)
 -- ================================================
 
 --[[
 
-  BAGIAN 1: "DATABASE" ANDA (WAJIB DIISI!)
+  BAGIAN 1: "DATABASE" ANDA (DIPERBARUI!)
   
-  Ini adalah "otak" skrip Anda. Kita harus mengajari skrip
-  tanaman apa yang termasuk tipe "Leafy", "Fruit", dll.
-  (Nama tanaman diambil dari log Anda sebelumnya)
+  Kita sekarang menggunakan tabel di dalam tabel.
+  Ini memungkinkan satu tanaman memiliki BANYAK tipe.
 ]]
 local MasterPlantDatabase = {
-    ["Tomato"] = "Fruit",
-    ["Blueberry"] = "Berry",
-    ["Strawberry"] = "Berry"
+    -- DIPERBARUI: "Tomato" sekarang memiliki 3 tipe
+    ["Tomato"] = { "Fruit", "Vegetable", "Leafy", "Summer" },
+    ["Corn"] = { "Fruit", "Vegetable", "Stalky" },
+    ["Blueberry"] = { "Berry", "Leafy", "Fruit", "Summer" },
+    ["Strawberry"] = { "Berry", "Fruit" }
+    ["Coconut"] = { "Fruit","Woody","Tropical" }
+    ["Giant Pinecone"] = { "Fruit","Woody","Tropical" }
+    ["Mango"] = { "Fruit","Leafy","Tropical","Woody" }
+    ["Orange Delight"] = { "Tropical" }
+    ["Candy Corn Flower"] = { "Flower", "Stalky" }
     
-    -- Tambahkan semua tanaman lain yang Anda tahu di sini
-    -- ["NamaTanamanLeafy1"] = "Leafy",
-    -- ["NamaTanamanLeafy2"] = "Leafy"
 }
-print("Database tanaman kustom dimuat.")
+
+print("Database tanaman multi-tipe dimuat.")
 
 -- ================================================
--- BAGIAN 2: PENGATURAN UI DAN "STATE" (KUNCI KONTAK)
+-- BAGIAN 2: PENGATURAN UI DAN "STATE" (Tidak berubah)
 -- ================================================
 
--- Ini adalah "Kunci Kontak" kita. 'false' berarti 'OFF'.
 local isAutoHarvestOn = false
-
--- Buat Kanvas
 local MyCanvas = Instance.new("ScreenGui")
 MyCanvas.Name = "HarvestUI"
 MyCanvas.Parent = game.Players.LocalPlayer.PlayerGui
-
--- Buat Tombol Toggle
 local TombolToggle = Instance.new("TextButton")
 TombolToggle.Name = "ToggleHarvest"
 TombolToggle.Text = "Auto Harvest: OFF"
 TombolToggle.Size = UDim2.new(0, 200, 0, 50)
-TombolToggle.Position = UDim2.new(0, 20, 0, 80) -- Posisikan di kiri layar
-TombolToggle.BackgroundColor3 = Color3.fromRGB(200, 50, 50) -- Warna Merah (OFF)
+TombolToggle.Position = UDim2.new(0, 20, 0, 80)
+TombolToggle.BackgroundColor3 = Color3.fromRGB(200, 50, 50) -- Merah (OFF)
 TombolToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
 TombolToggle.Font = Enum.Font.SourceSansBold
 TombolToggle.TextSize = 18
 TombolToggle.Parent = MyCanvas
-
 print("UI Toggle berhasil dibuat.")
 
 -- ================================================
--- BAGIAN 3: LOKASI "HIT" (DARI TEMUAN ANDA)
+-- BAGIAN 3: LOKASI "HIT" (Tidak berubah)
 -- ================================================
 
--- Ini adalah "hit" yang Anda temukan. Kita tidak perlu menebak lagi.
 local HarvestEvent_Benar = game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("Crops"):WaitForChild("Collect")
-
 if HarvestEvent_Benar then
     print("SUKSES! RemoteEvent panen ditemukan di ...Crops:WaitForChild('Collect')")
 else
-    -- Ini seharusnya tidak terjadi jika temuan Anda benar, tapi ini adalah pengaman
     print("PERINGATAN: Gagal menemukan RemoteEvent di ...Crops:WaitForChild('Collect')")
 end
 
 
 -- ================================================
--- BAGIAN 4: FUNGSI-FUNGSI PENDUKUNG (MESIN-NYA)
+-- BAGIAN 4: FUNGSI-FUNGSI PENDUKUNG (DENGAN TAMBAHAN)
 -- ================================================
 
--- Fungsi untuk membersihkan tag HTML (dari Investigasi V6)
+-- FUNGSI BARU: Pengecek tipe di dalam daftar
+-- Ini akan memeriksa apakah 'targetTipe' (misal "Vegetable")
+-- ada di dalam 'daftarTipe' (misal {"Fruit", "Vegetable", "Leafy"})
+function ApakahTipeAdaDiDaftar(daftarTipe, targetTipe)
+    for i, tipe in pairs(daftarTipe) do
+        if tipe == targetTipe then
+            return true -- Ditemukan!
+        end
+    end
+    return false -- Tidak ditemukan
+end
+
+
+-- Fungsi untuk membersihkan tag HTML (Tidak berubah)
 function HapusTagHTML(teks)
     local teksBersih = string.gsub(teks, "<[^>]*>", "")
     return teksBersih
 end
 
--- Fungsi untuk menemukan target quest dari gelembung (dari Investigasi V6)
+-- Fungsi untuk menemukan target quest dari gelembung (Tidak berubah)
 function DapatkanTargetEvent()
     local targetDitemukan = nil
     for i, objek in pairs(workspace:GetDescendants()) do
@@ -81,7 +89,7 @@ function DapatkanTargetEvent()
                 local teksBersih = HapusTagHTML(objek.Text)
                 local targetTipe = teksBersih:match("looking for (.*) Plants")
                 if targetTipe then
-                    targetDitemukan = targetTipe -- (Contoh: "Leafy", "Fruit", dll.)
+                    targetDitemukan = targetTipe
                     break 
                 end
             end
@@ -96,12 +104,11 @@ function DapatkanTargetEvent()
     end
 end
 
--- Fungsi untuk mendapatkan kebun pemain (dari skrip autofarm)
+-- Fungsi untuk mendapatkan kebun pemain (Tidak berubah)
 local function DapatkanKebunPemain(namaPemain)
     local farmFolder = workspace:FindFirstChild("Farm")
     if farmFolder then
         for i, farm in pairs(farmFolder:GetChildren()) do
-            -- Perbaikan typo dari error log terakhir Anda
             local dataOwner = farm:FindFirstChild("Important"):FindFirstChild("Data"):FindFirstChild("Owner")
             if dataOwner and dataOwner.Value == namaPemain then
                 return farm
@@ -113,25 +120,22 @@ local function DapatkanKebunPemain(namaPemain)
 end
 
 -- ================================================
--- BAGIAN 5: LOGIKA AKSI BARU (METODE "HIT LANGSUNG")
+-- BAGIAN 5: LOGIKA AKSI (DIPERBARUI)
 -- ================================================
 
 local function LakukanSiklusPanen_HitLangsung()
     
-    -- Cek #1: Pastikan "hit" kita ada
     if not HarvestEvent_Benar then
-        print("Siklus dibatalkan: RemoteEvent untuk panen tidak ditemukan.")
+        print("Siklus dibatalkan: RemoteEvent tidak ditemukan.")
         return 
     end
     
-    -- Cek #2: Dapatkan quest
-    local tipeTargetEvent = DapatkanTargetEvent()
+    local tipeTargetEvent = DapatkanTargetEvent() -- (Contoh: "Vegetable")
     if not tipeTargetEvent then 
         print("Siklus panen dilewati: Tidak ada target event ditemukan.")
         return 
     end 
     
-    -- Cek #3: Dapatkan kebun
     local pemainLokal = game.Players.LocalPlayer
     local kebunPemain = DapatkanKebunPemain(pemainLokal.Name)
     if not kebunPemain then 
@@ -142,30 +146,25 @@ local function LakukanSiklusPanen_HitLangsung()
     local folderTanaman = kebunPemain.Important.Plants_Physical
     print("Memulai siklus 'Hit Langsung' untuk Tipe: " .. tipeTargetEvent)
 
-    -- Loop ke setiap tanaman di kebun Anda
     for i, tanaman in pairs(folderTanaman:GetChildren()) do
         
-        -- Berhenti jika toggle dimatikan
         if not isAutoHarvestOn then break end 
         
         local namaTanaman = tanaman.Name
         
-        -- Cari tipenya di "Database" kita (Bagian 1)
-        local tipeTanamanIni = MasterPlantDatabase[namaTanaman]
+        -- DAPATKAN DAFTAR TIPE (Contoh: {"Fruit", "Vegetable", "Leafy"})
+        local daftarTipeTanamanIni = MasterPlantDatabase[namaTanaman]
         
-        -- FILTER UTAMA: Apakah tipe tanaman ini = tipe quest?
-        if tipeTanamanIni and tipeTanamanIni == tipeTargetEvent then
+        -- FILTER UTAMA (DIPERBARUI)
+        -- Cek apakah quest ("Vegetable") ada di dalam daftar tipe tanaman
+        if daftarTipeTanamanIni and ApakahTipeAdaDiDaftar(daftarTipeTanamanIni, tipeTargetEvent) then
             
             -- LOLOS FILTER!
             print("Lolos Filter: " .. namaTanaman .. ". Mengirim 'Hit' ke server...")
             
-            -- !!! INI DIA AKSINYA !!!
-            -- Kita mengirim "hit" langsung ke server dengan
-            -- objek tanaman yang SEBENARNYA, bukan 'Instance.new()'
-            -- Inilah yang akan memanennya dari jauh.
+            -- AKSI "HIT"
             HarvestEvent_Benar:FireServer(tanaman)
             
-            -- Beri jeda singkat antar "hit" agar tidak spam
             wait(0.5) 
         end
     end
@@ -173,39 +172,32 @@ local function LakukanSiklusPanen_HitLangsung()
 end
 
 -- ================================================
--- BAGIAN 6: LOGIKA PENGENDALI (KONEKSI & LOOP)
+-- BAGIAN 6: LOGIKA PENGENDALI (Tidak berubah)
 -- ================================================
 
--- 1. KONEKSI TOMBOL
 TombolToggle.MouseButton1Click:Connect(function()
     isAutoHarvestOn = not isAutoHarvestOn
     
     if isAutoHarvestOn then
         print("Auto Harvest (Metode Hit): ON")
         TombolToggle.Text = "Auto Harvest: ON"
-        TombolToggle.BackgroundColor3 = Color3.fromRGB(50, 200, 50) -- Hijau
-        
-        -- Langsung jalankan 1x saat dinyalakan
+        TombolToggle.BackgroundColor3 = Color3.fromRGB(50, 200, 50) 
         print("Menjalankan siklus panen pertama...")
         LakukanSiklusPanen_HitLangsung() 
-        
     else
         print("Auto Harvest (Metode Hit): OFF")
         TombolToggle.Text = "Auto Harvest: OFF"
-        TombolToggle.BackgroundColor3 = Color3.fromRGB(200, 50, 50) -- Merah
+        TombolToggle.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
     end
 end)
 
--- 2. LOOP UTAMA
--- Ini akan otomatis memeriksa ulang setiap 3 detik
 coroutine.wrap(function()
     while true do
         wait(3) 
         if isAutoHarvestOn == true then
-            -- Jalankan mesin panen jika toggle "ON"
             LakukanSiklusPanen_HitLangsung()
         end
     end
 end)()
 
-print("Skrip Auto-Harvest (Metode Hit Langsung V_FINAL) berhasil dimuat!")
+print("Skrip Auto-Harvest (Multi-Tipe) berhasil dimuat!")

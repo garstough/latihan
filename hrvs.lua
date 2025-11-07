@@ -1,39 +1,55 @@
+print("Memulai pencarian properti tanaman...")
 
-print("Mulai")
-
--- Fungsi ini diambil dari skrip autofarm (baris 83-93)
-local function GetFarm(PlayerName)
-    local Farms = workspace.Farm:GetChildren()
-    for _, Farm in next, Farms do
-        local Owner = Farm.Important.Data.Owner.Value
-        if Owner == PlayerName then
-            return Farm
+-- Fungsi untuk mendapatkan folder kebun pemain
+local function DapatkanKebunPemain(namaPemain)
+    local farmFolder = workspace:FindFirstChild("Farm")
+    if farmFolder then
+        for i, farm in pairs(farmFolder:GetChildren()) do
+            local dataOwner = farm:FindFirstChild("Important"):FindFirstChild("Data"):FindFirstChild("Owner")
+            if dataOwner and dataOwner.Value == namaPemain then
+                return farm
+            end
         end
     end
+    return nil
 end
 
--- Dapatkan kebun milik Anda
-local MyFarm = GetFarm(game.Players.LocalPlayer.Name)
+local pemainLokal = game.Players.LocalPlayer
+local kebunPemain = DapatkanKebunPemain(pemainLokal.Name)
 
-if not MyFarm then
-    print("ERROR: Tidak bisa menemukan kebun Anda!")
-    return
+if not kebunPemain then
+    print("Error: Folder kebun pemain tidak ditemukan.")
+    return -- Hentikan skrip jika kebun tidak ditemukan
 end
 
--- Dapatkan folder tempat tanaman fisik disimpan (baris 230)
-local PlantsPhysical = MyFarm.Important.Plants_Physical
-print("Berhasil menemukan folder tanaman Anda. Membaca nama tanaman...")
+local folderTanaman = kebunPemain.Important.Plants_Physical
+print("Berhasil menemukan folder tanaman. Memeriksa properti...")
 
--- Loop untuk mencetak nama setiap tanaman
-local NamaTanamanYangDitemukan = {}
-for i, plant in pairs(PlantsPhysical:GetChildren()) do
+local propertiTercetak = {} -- Untuk melacak apa yang sudah kita cetak
+
+-- Loop ke setiap tanaman di folder
+for i, tanaman in pairs(folderTanaman:GetChildren()) do
     
-    -- Cek agar tidak print nama yang sama berulang kali
-    if not NamaTanamanYangDitemukan[plant.Name] then
-        print("DITEMUKAN: " .. plant.Name)
-        NamaTanamanYangDitemukan[plant.Name] = true
+    -- Cek agar tidak mencetak properti yang sama berulang kali
+    if not propertiTercetak[tanaman.Name] then
+        print("================================")
+        print("Menganalisis Tanaman: " .. tanaman.Name)
+        
+        -- Loop ke SEMUA bagian di dalam tanaman itu
+        for _, properti in pairs(tanaman:GetChildren()) do
+            
+            -- Cetak nama properti dan kelasnya (jenis objeknya)
+            print("  > Properti Ditemukan: " .. properti.Name .. " (Tipe: " .. properti.ClassName .. ")")
+            
+            -- Jika itu adalah objek "Value" (StringValue, IntValue, dll.)
+            -- kita juga cetak nilainya
+            if properti:IsA("ValueBase") then
+                print("    --> Nilainya: " .. tostring(properti.Value))
+            end
+        end
+        
+        propertiTercetak[tanaman.Name] = true -- Tandai sudah dicetak
     end
 end
 
-print("===== SELESAI =====")
-print("Silakan cek daftar di atas untuk nama tanaman event Anda.")
+print("===== Pencarian Properti Selesai =====")

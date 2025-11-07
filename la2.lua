@@ -1,5 +1,5 @@
 -- ================================================
--- SKRIP AUTO-HARVEST DENGAN UI TOGGLE (VERSI PERBAIKAN)
+-- SKRIP AUTO-HARVEST DENGAN UI TOGGLE (VERSI PERBAIKAN V3)
 -- ================================================
 
 -- BAGIAN 1: "DATABASE" ANDA
@@ -71,8 +71,8 @@ local function DapatkanKebunPemain(namaPemain)
     if farmFolder then
         for i, farm in pairs(farmFolder:GetChildren()) do
             
-            -- !!! INI ADALAH TYPO YANG SAYA PERBAIKI !!!
-            -- Sebelumnya: findFirstFirsChild (salah)
+            -- !!! INI ADALAH PERBAIKAN DARI TYPO V2 !!!
+            -- Seharusnya 'FindFirstChild', bukan 'FindFirstFirsChild'
             local dataOwner = farm:FindFirstChild("Important"):FindFirstChild("Data"):FindFirstChild("Owner")
             
             if dataOwner and dataOwner.Value == namaPemain then
@@ -148,8 +148,6 @@ TombolToggle.MouseButton1Click:Connect(function()
         TombolToggle.Text = "Auto Harvest: ON"
         TombolToggle.BackgroundColor3 = Color3.fromRGB(50, 200, 50) -- Hijau (ON)
         
-        -- BARU: Langsung jalankan 1x saat dinyalakan
-        -- (Agar tidak perlu menunggu loop 3 detik)
         print("Menjalankan siklus panen pertama...")
         LakukanSiklusPanen() 
         
@@ -163,15 +161,11 @@ end)
 -- 2. LOOP UTAMA
 coroutine.wrap(function()
     while true do
-        
-        -- Dibuat lebih cepat untuk tes, dari 10 detik ke 3 detik
         wait(3) 
-        
         if isAutoHarvestOn == true then
             LakukanSiklusPanen()
         end
-        
     end
 end)()
 
-print("Skrip Auto-Harvest dengan UI Toggle (v2) berhasil dimuat!")
+print("Skrip Auto-Harvest dengan UI Toggle (v3) berhasil dimuat!")

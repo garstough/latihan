@@ -14,11 +14,11 @@ local MasterPlantDatabase = {
     ["Tomato"] = { "Fruit", "Vegetable", "Leafy", "Summer" },
     ["Corn"] = { "Fruit", "Vegetable", "Stalky" },
     ["Blueberry"] = { "Berry", "Leafy", "Fruit", "Summer" },
-    ["Strawberry"] = { "Berry", "Fruit" }
-    ["Coconut"] = { "Fruit","Woody","Tropical" }
-    ["Giant Pinecone"] = { "Fruit","Woody","Tropical" }
-    ["Mango"] = { "Fruit","Leafy","Tropical","Woody" }
-    ["Orange Delight"] = { "Tropical" }
+    ["Strawberry"] = { "Berry", "Fruit" },
+    ["Coconut"] = { "Fruit","Woody","Tropical" },
+    ["Giant Pinecone"] = { "Fruit","Woody","Tropical" },
+    ["Mango"] = { "Fruit","Leafy","Tropical","Woody" },
+    ["Orange Delight"] = { "Tropical" },
     ["Candy Corn Flower"] = { "Flower", "Stalky" }
     
 }

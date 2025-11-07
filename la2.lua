@@ -1,5 +1,5 @@
 -- ================================================
--- SKRIP AUTO-HARVEST (METODE HIT LANGSUNG)
+-- SKRIP AUTO-HARVEST (METODE HIT LANGSUNG / TEBAKAN V2)
 -- ================================================
 
 -- BAGIAN 1: "DATABASE" ANDA
@@ -31,29 +31,33 @@ TombolToggle.Parent = MyCanvas
 print("UI Toggle berhasil dibuat.")
 
 -- ================================================
--- BAGIAN 3: MENEBAK LOKASI "HIT" (REMOTE EVENT)
+-- BAGIAN 3: MENEBAK LOKASI "HIT" (VERSI "AUTO-SELL")
 -- ================================================
 
--- Berdasarkan 'autofarm.lua', event ada di ReplicatedStorage.GameEvents
+-- Kita tahu dari bahwa folder eventnya adalah 'GameEvents'
 local ReplicatedEvents = game:GetService("ReplicatedStorage"):FindFirstChild("GameEvents")
 
--- Di sinilah kita "menebak-nebak" seperti yang Anda minta.
--- Kita akan mencoba beberapa nama yang paling umum.
 local HarvestEvent_Tebakan = nil
 
 if ReplicatedEvents then
-    print("Mencari RemoteEvent panen...")
-    -- Coba tebakan pertama:
-    HarvestEvent_Tebakan = ReplicatedEvents:FindFirstChild("HarvestPlant")
+    print("Mencari RemoteEvent panen (Metode 'Auto-Sell')...")
     
-    -- Coba tebakan kedua jika yang pertama gagal:
+    -- Tebakan 1: Paling mirip dengan 'Plant_RE'
+    HarvestEvent_Tebakan = ReplicatedEvents:FindFirstChild("Harvest_RE")
+    
+    -- Tebakan 2: Paling mirip dengan 'Sell_Inventory'
+    if not HarvestEvent_Tebakan then
+        HarvestEvent_Tebakan = ReplicatedEvents:FindFirstChild("Harvest_Inventory")
+    end
+    
+    -- Tebakan 3: Nama yang paling logis
     if not HarvestEvent_Tebakan then
         HarvestEvent_Tebakan = ReplicatedEvents:FindFirstChild("Harvest")
     end
-    
-    -- Coba tebakan ketiga:
+
+    -- Tebakan 4: Nama umum (jika panen dianggap 'interact')
     if not HarvestEvent_Tebakan then
-        HarvestEvent_Tebakan = ReplicatedEvents:FindFirstChild("Harvest_RE")
+        HarvestEvent_Tebakan = ReplicatedEvents:FindFirstChild("Interact")
     end
 else
     print("Error: Folder 'GameEvents' tidak ditemukan di ReplicatedStorage.")
@@ -62,7 +66,7 @@ end
 if HarvestEvent_Tebakan then
     print("SUKSES! Tebakan kita menemukan RemoteEvent bernama: " .. HarvestEvent_Tebakan.Name)
 else
-    print("PERINGATAN: Gagal menemukan RemoteEvent panen. Semua tebakan salah.")
+    print("PERINGATAN: Gagal menemukan RemoteEvent panen. Semua tebakan baru salah.")
 end
 
 
@@ -106,10 +110,9 @@ end
 
 local function LakukanSiklusPanen_RemoteEvent()
     
-    -- Cek #1: Pastikan tebakan RemoteEvent kita berhasil ditemukan
     if not HarvestEvent_Tebakan then
         print("Siklus dibatalkan: RemoteEvent untuk panen tidak ditemukan.")
-        return -- Hentikan fungsi
+        return 
     end
     
     local tipeTargetEvent = DapatkanTargetEvent()
@@ -129,20 +132,15 @@ local function LakukanSiklusPanen_RemoteEvent()
         local namaTanaman = tanaman.Name
         local tipeTanamanIni = MasterPlantDatabase[namaTanaman]
         
-        -- FILTER UTAMA
         if tipeTanamanIni and tipeTanamanIni == tipeTargetEvent then
-            
-            -- Kita tidak perlu memeriksa 'prompt.Enabled'
-            -- Kita anggap saja jika sudah ada, kita panen
             
             print("Lolos Filter: " .. namaTanaman .. ". Mengirim 'Hit' ke server...")
             
             -- !!! INI DIA AKSINYA !!!
-            -- Tidak perlu teleport. Tidak perlu jalan.
-            -- Langsung "tembak" server.
+            -- Langsung "tembak" server dengan "objek tanaman"
             HarvestEvent_Tebakan:FireServer(tanaman)
             
-            wait(0.5) -- Beri jeda antar "hit" agar tidak spam
+            wait(0.5) -- Beri jeda antar "hit"
         end
     end
     print("Siklus 'Hit Langsung' selesai.")
@@ -158,7 +156,7 @@ TombolToggle.MouseButton1Click:Connect(function()
         print("Auto Harvest (Metode Hit): ON")
         TombolToggle.Text = "Auto Harvest: ON"
         TombolToggle.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
-        LakukanSiklusPanen_RemoteEvent() -- Coba 1x saat dinyalakan
+        LakukanSiklusPanen_RemoteEvent() 
     else
         print("Auto Harvest (Metode Hit): OFF")
         TombolToggle.Text = "Auto Harvest: OFF"
@@ -168,11 +166,11 @@ end)
 
 coroutine.wrap(function()
     while true do
-        wait(3) -- Cek ulang setiap 3 detik
+        wait(3) 
         if isAutoHarvestOn == true then
             LakukanSiklusPanen_RemoteEvent()
         end
     end
 end)()
 
-print("Skrip Auto-Harvest (Metode Hit Langsung) berhasil dimuat!")
+print("Skrip Auto-Harvest (Metode Hit Langsung V2) berhasil dimuat!")

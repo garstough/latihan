@@ -1,35 +1,41 @@
 -- ==========================================
--- SKRIP INVESTIGASI V5 (PENCARI GELEMBUNG QUEST)
+-- SKRIP INVESTIGASI V6 (PEMBERSIH RICH TEXT)
 -- ==========================================
 
-print("Memulai Investigasi V5...")
-print("Mencari gelembung quest (mencari teks 'looking for')...")
+print("Memulai Investigasi V6...")
+print("Mencari gelembung quest (mencari 'looking for')...")
+
+-- FUNGSI BARU: Untuk menghapus tag HTML (Rich Text)
+-- Pola ini menemukan semua tag seperti <...> dan menggantinya dengan "" (kosong)
+function HapusTagHTML(teks)
+    local teksBersih = string.gsub(teks, "<[^>]*>", "")
+    return teksBersih
+end
 
 local ditemukan = false
 
 -- Loop melalui SEMUA objek di dalam game
 for i, objek in pairs(workspace:GetDescendants()) do
     
-    -- Kita cari TextLabel
     if objek:IsA("TextLabel") then
         
-        -- DI SINI PERUBAHANNYA:
-        -- Kita tidak lagi menggunakan '=='. Kita gunakan 'string.find'
-        -- untuk mencari apakah teksnya 'mengandung' kata "looking for"
+        -- Kita masih mencari 'looking for' di teks asli (yang mungkin ada tag)
         if string.find(objek.Text, "looking for") then
             
             print("=================================")
-            print("DITEMUKAN! Teks quest yang relevan:")
-            print("  --> TEKS LENGKAP: '" .. objek.Text .. "'")
+            print("DITEMUKAN! Teks quest (dengan tag): '" .. objek.Text .. "'")
             
-            -- SEKARANG, KITA EKSTRAK TIPENYA!
-            -- Kita ambil teks di antara "looking for " dan " Plants"
-            local targetTipe = objek.Text:match("looking for (.*) Plants")
+            -- LANGKAH BARU: Bersihkan teksnya menggunakan fungsi baru kita
+            local teksBersih = HapusTagHTML(objek.Text)
+            print("  --> TEKS SETELAH DIBERSIHKAN: '" .. teksBersih .. "'")
+            
+            -- SEKARANG, kita ekstrak dari teks bersih
+            local targetTipe = teksBersih:match("looking for (.*) Plants")
             
             if targetTipe then
                 print("  --> TARGET QUEST YANG DIEKSTRAK: '" .. targetTipe .. "'")
             else
-                print("  -- Gagal mengekstrak tipe dari teks.")
+                print("  -- Gagal mengekstrak tipe dari teks bersih.")
             end
             
             print("=================================")
@@ -42,5 +48,4 @@ end
 
 if not ditemukan then
     print("Pencarian selesai. Tidak ada gelembung quest yang ditemukan.")
-    print("PASTIKAN Anda berdiri DEKAT dengan NPC dan gelembung pikirannya terlihat.")
 end

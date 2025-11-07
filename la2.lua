@@ -47,7 +47,7 @@ if ReplicatedEvents then
     
     -- Tebakan 2: Paling mirip dengan 'Sell_Inventory'
     if not HarvestEvent_Tebakan then
-        HarvestEvent_Tebakan = ReplicatedEvents:FindFirstChild("Harvest_Inventory")
+        HarvestEvent_Tebakan = ReplicatedEvents:FindFirstChild("HarvestPlant")
     end
     
     -- Tebakan 3: Nama yang paling logis
@@ -58,6 +58,10 @@ if ReplicatedEvents then
     -- Tebakan 4: Nama umum (jika panen dianggap 'interact')
     if not HarvestEvent_Tebakan then
         HarvestEvent_Tebakan = ReplicatedEvents:FindFirstChild("Interact")
+    end
+    
+    if not HarvestEvent_Tebakan then
+        HarvestEvent_Tebakan = ReplicatedEvents:FindFirstChild("Harvest_Plant")
     end
 else
     print("Error: Folder 'GameEvents' tidak ditemukan di ReplicatedStorage.")

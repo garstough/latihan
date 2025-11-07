@@ -14,7 +14,7 @@ for i, objek in pairs(workspace:GetDescendants()) do
     if objek:IsA("TextLabel") then
         
         -- Cek apakah teksnya persis "Joyce"
-        if objek.Text == "Joyce" then
+        if objek.Text == "Safari Joyce" then
             print("=================================")
             print("DITEMUKAN! 'TextLabel' dengan teks 'Joyce'.")
             

@@ -1,20 +1,57 @@
 -- ================================================
--- FILE LENGKAP AUTO-HARVEST DINAMIS (VERSI TELEPORT)
+-- SKRIP AUTO-HARVEST DENGAN UI TOGGLE (VERSI FINAL)
 -- ================================================
 
--- BAGIAN 1: "DATABASE" ANDA (Sama seperti sebelumnya)
+--[[
+
+  BAGIAN 1: "DATABASE" ANDA (WAJIB DIISI!)
+  
+  Ini adalah "otak" skrip Anda. Kita harus mengajari skrip
+  tanaman apa yang termasuk tipe "Leafy", "Fruit", dll.
+
+]]
 local MasterPlantDatabase = {
     -- Ganti ini dengan tanaman Anda yang sebenarnya
     ["Tomato"] = "Fruit",
     ["Blueberry"] = "Berry",
     ["Strawberry"] = "Berry"
     
+    -- Tambahkan semua tanaman lain yang Anda tahu di sini
+    -- ["NamaTanamanLeafy1"] = "Leafy",
+    -- ["NamaTanamanLeafy2"] = "Leafy"
 }
 
 print("Database tanaman kustom dimuat.")
 
 -- ================================================
--- BAGIAN 2: FUNGSI-FUNGSI PENDUKUNG (Sama seperti sebelumnya)
+-- BAGIAN 2: PENGATURAN UI DAN "STATE" (KUNCI KONTAK)
+-- ================================================
+
+-- Ini adalah "Kunci Kontak" kita. 'false' berarti 'OFF'.
+local isAutoHarvestOn = false
+
+-- 1. Buat Kanvas (seperti skrip "Halo" Anda)
+local MyCanvas = Instance.new("ScreenGui")
+MyCanvas.Name = "HarvestUI"
+MyCanvas.Parent = game.Players.LocalPlayer.PlayerGui
+
+-- 2. Buat Tombol Toggle
+local TombolToggle = Instance.new("TextButton")
+TombolToggle.Name = "ToggleHarvest"
+TombolToggle.Text = "Auto Harvest: OFF"
+TombolToggle.Size = UDim2.new(0, 200, 0, 50)
+TombolToggle.Position = UDim2.new(0, 20, 0, 80) -- Posisikan di kiri layar
+TombolToggle.BackgroundColor3 = Color3.fromRGB(200, 50, 50) -- Warna Merah (OFF)
+TombolToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+TombolToggle.Font = Enum.Font.SourceSansBold
+TombolToggle.TextSize = 18
+TombolToggle.Parent = MyCanvas
+
+print("UI Toggle berhasil dibuat.")
+
+-- ================================================
+-- BAGIAN 3: FUNGSI-FUNGSI PENDUKUNG (MESIN-NYA)
+-- (Fungsi-fungsi ini sama seperti yang kita buat sebelumnya)
 -- ================================================
 
 function HapusTagHTML(teks)
@@ -38,10 +75,9 @@ function DapatkanTargetEvent()
     end
     
     if targetDitemukan then
-        print("Target Event Ditemukan: " .. targetDitemukan)
         return targetDitemukan
     else
-        print("Error: Tidak dapat menemukan gelembung quest. Pastikan Anda dekat NPC.")
+        print("Target Event tidak ditemukan (Gelembung quest tidak aktif).")
         return nil
     end
 end
@@ -50,94 +86,105 @@ local function DapatkanKebunPemain(namaPemain)
     local farmFolder = workspace:FindFirstChild("Farm")
     if farmFolder then
         for i, farm in pairs(farmFolder:GetChildren()) do
-            local dataOwner = farm:FindFirstChild("Important"):FindFirstChild("Data"):FindFirstChild("Owner")
+            local dataOwner = farm:FindFirstFirsChild("Important"):FindFirstChild("Data"):FindFirstChild("Owner")
             if dataOwner and dataOwner.Value == namaPemain then
                 return farm
             end
         end
     end
-    print("Error: Folder kebun pemain tidak ditemukan.")
     return nil
 end
 
--- ================================================
--- BAGIAN 3: LOGIKA UTAMA (DENGAN LOGIKA TELEPORT)
--- ================================================
-
-local function HarvestOtomatisBerdasarkanEvent()
+-- Ini adalah FUNGSI MESIN UTAMA kita
+-- (Kita gunakan metode Auto-Walk yang aman)
+local function LakukanSiklusPanen()
     
-    -- 1. Dapatkan tipe target
     local tipeTargetEvent = DapatkanTargetEvent()
-    if not tipeTargetEvent then return end
+    if not tipeTargetEvent then return end -- Berhenti jika tidak ada quest
     
-    -- 2. Dapatkan kebun DAN karakter pemain
     local pemainLokal = game.Players.LocalPlayer
     local kebunPemain = DapatkanKebunPemain(pemainLokal.Name)
     local Character = pemainLokal.Character
-    -- Kita butuh 'HumanoidRootPart' untuk teleportasi
-    local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
+    local Humanoid = Character:FindFirstChildOfClass("Humanoid")
     
-    if not kebunPemain or not HumanoidRootPart then
-        print("Error: Kebun atau HumanoidRootPart tidak ditemukan.")
-        return
-    end
+    if not kebunPemain or not Humanoid then return end
     
     local folderTanaman = kebunPemain.Important.Plants_Physical
-    print("Memulai filter panen untuk Tipe: " .. tipeTargetEvent)
+    print("Memulai siklus panen untuk Tipe: " .. tipeTargetEvent)
 
-    -- 3. Loop ke setiap tanaman
     for i, tanaman in pairs(folderTanaman:GetChildren()) do
+        
+        -- Berhenti di tengah-tengah jika user mematikan toggle
+        if not isAutoHarvestOn then
+            print("Toggle dimatikan. Menghentikan siklus panen.")
+            break 
+        end
         
         local namaTanaman = tanaman.Name
         local tipeTanamanIni = MasterPlantDatabase[namaTanaman]
         
-        -- 4. FILTER UTAMA
         if tipeTanamanIni and tipeTanamanIni == tipeTargetEvent then
-            
-            print("Lolos Filter: " .. namaTanaman .. ". Memeriksa prompt...")
-            
-            -- 5. AKSI PANEN (VERSI TELEPORT)
             local prompt = tanaman:FindFirstChild("ProximityPrompt", true)
             if prompt and prompt.Enabled then
                 
-                -- --- PERBAIKAN TELEPORT DIMULAI ---
+                print("Bergerak ke: " .. namaTanaman)
+                Humanoid:MoveTo(tanaman:GetPivot().Position)
+                Humanoid.MoveToFinished:Wait()
                 
-                -- A. Simpan lokasi asli Anda
-                local lokasiAsli = HumanoidRootPart.CFrame
+                -- Cek lagi, jaga-jaga user mematikan saat kita sedang berjalan
+                if not isAutoHarvestOn then break end 
                 
-                -- B. Dapatkan lokasi tanaman (naik sedikit agar tidak di dalam tanah)
-                local lokasiTanaman = tanaman:GetPivot().Position + Vector3.new(0, 3, 0)
-                
-                print("Teleport ke: " .. namaTanaman)
-                
-                -- C. TELEPORT karakter ke tanaman
-                Character:SetPrimaryPartCFrame(CFrame.new(lokasiTanaman))
-                
-                -- D. Panen (beri jeda sedikit agar game mendeteksi lokasi baru)
-                wait(0.1) -- Jeda singkat
                 fireproximityprompt(prompt)
-                print("Berhasil mengirim perintah panen untuk " .. namaTanaman)
-                
-                -- E. TUNGGU sebentar
-                wait(0.2) 
-                
-                -- F. TELEPORT KEMBALI ke lokasi asli
-                Character:SetPrimaryPartCFrame(lokasiAsli)
-                
-                -- G. Beri jeda 1 detik agar game bisa memproses
+                print("Berhasil memanen " .. namaTanaman)
                 wait(1) 
-                
-                -- --- PERBAIKAN TELEPORT SELESAI ---
-                
             end
         end
     end
-    
-    print("Siklus filter panen selesai.")
+    print("Siklus panen selesai.")
 end
 
 -- ================================================
--- BAGIAN 4: MEMULAI SKRIP
+-- BAGIAN 4: LOGIKA PENGENDALI (KONEKSI & LOOP)
 -- ================================================
 
-HarvestOtomatisBerdasarkanEvent()
+-- 1. KONEKSI TOMBOL (Dasbor)
+-- Ini adalah kode yang berjalan SAAT ANDA MENGKLIK tombol
+TombolToggle.MouseButton1Click:Connect(function()
+    
+    -- Balikkan nilainya (true jadi false, false jadi true)
+    isAutoHarvestOn = not isAutoHarvestOn
+    
+    -- Perbarui tampilan tombol
+    if isAutoHarvestOn then
+        print("Auto Harvest: ON")
+        TombolToggle.Text = "Auto Harvest: ON"
+        TombolToggle.BackgroundColor3 = Color3.fromRGB(50, 200, 50) -- Warna Hijau (ON)
+    else
+        print("Auto Harvest: OFF")
+        TombolToggle.Text = "Auto Harvest: OFF"
+        TombolToggle.BackgroundColor3 = Color3.fromRGB(200, 50, 50) -- Warna Merah (OFF)
+    end
+end)
+
+-- 2. LOOP UTAMA (Pengemudi)
+-- coroutine.wrap() adalah cara aman untuk membuat loop
+-- agar tidak membekukan game Anda.
+coroutine.wrap(function()
+    while true do
+        
+        -- Ini adalah "tick" utama bot Anda.
+        -- Kita akan jalankan cek setiap 10 detik.
+        wait(10) 
+        
+        -- Pengecekan si "Pengemudi"
+        if isAutoHarvestOn == true then
+            -- Kunci ON! Jalankan mesinnya.
+            LakukanSiklusPanen()
+        else
+            -- Kunci OFF. Diam dan tunggu.
+        end
+        
+    end
+end)()
+
+print("Skrip Auto-Harvest dengan UI Toggle berhasil dimuat!")

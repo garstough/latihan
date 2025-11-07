@@ -1,5 +1,5 @@
 -- ================================================
--- SKRIP AUTO-HARVEST (METODE HIT LANGSUNG / TEBAKAN V2)
+-- SKRIP AUTO-HARVEST (METODE HIT LANGSUNG / TEBAKAN V2.)
 -- ================================================
 
 -- BAGIAN 1: "DATABASE" ANDA

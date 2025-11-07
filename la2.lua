@@ -8,7 +8,7 @@ local MasterPlantDatabase = {
     ["Tomato"] = "Fruit",
     ["Blueberry"] = "Berry",
     ["Strawberry"] = "Berry"
-    -- Tambahkan tanaman lain yang Anda tahu
+    
 }
 
 print("Database tanaman kustom dimuat.")

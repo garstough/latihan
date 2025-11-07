@@ -1,26 +1,26 @@
 -- ==========================================
--- SKRIP INVESTIGASI V3 (PENCARI PROPERTI QUEST LENGKAP)
+-- SKRIP INVESTIGASI V4 (PENCARI NAMA TEPAT)
 -- ==========================================
 
-print("Memulai Investigasi V3 (Pencari Properti Quest Mendalam)...")
-print("Mencari TextLabel dengan teks 'Joyce'...")
+print("Memulai Investigasi V4...")
+print("Mencari TextLabel dengan teks 'Safari Joyce'...")
 
 local ditemukan = false
+local targetTeks = "Safari Joyce" -- NAMA YANG BENAR
 
--- Loop melalui SEMUA objek di dalam game (lebih mendalam)
+-- Loop melalui SEMUA objek di dalam game
 for i, objek in pairs(workspace:GetDescendants()) do
     
     -- Kita cari TextLabel
     if objek:IsA("TextLabel") then
         
-        -- Cek apakah teksnya persis "Joyce"
-        if objek.Text == "Safari Joyce" then
+        -- DI SINI PERUBAHANNYA: Kita cari nama yang tepat
+        if objek.Text == targetTeks then
             print("=================================")
-            print("DITEMUKAN! 'TextLabel' dengan teks 'Joyce'.")
+            print("DITEMUKAN! 'TextLabel' dengan teks '" .. targetTeks .. "'.")
             
             -- Sekarang, kita cari 'Model' induknya (NPC-nya)
             local modelInduk = objek
-            -- Terus naik ke atas sampai kita menemukan 'Model'
             while modelInduk.Parent ~= nil and not modelInduk:IsA("Model") do
                 modelInduk = modelInduk.Parent
             end
@@ -29,11 +29,10 @@ for i, objek in pairs(workspace:GetDescendants()) do
                 print("  --> NAMA MODEL (NPC) ASLI: " .. modelInduk.Name)
                 print("Mulai memindai properti quest di dalam '" .. modelInduk.Name .. "'...")
                 
-                -- SEKARANG KITA PINDAI SEMUA PROPERTI DI DALAM MODEL ITU
+                -- PINDAI SEMUA PROPERTI DI DALAM MODEL ITU
                 local propertiQuestDitemukan = false
                 for _, properti in pairs(modelInduk:GetDescendants()) do
                     
-                    -- Kita hanya tertarik pada 'Value' (StringValue, BoolValue, dll.)
                     if properti:IsA("ValueBase") then
                         print("    > Properti Ditemukan: " .. properti.Name)
                         print("      --> NILAINYA: " .. tostring(properti.Value))
@@ -58,6 +57,6 @@ for i, objek in pairs(workspace:GetDescendants()) do
 end
 
 if not ditemukan then
-    print("Pencarian selesai. 'TextLabel' bernama 'Joyce' tidak ditemukan.")
-    print("PASTIKAN Anda berdiri sangat DEKAT dengan 'Joyce' agar dia termuat di game.")
+    print("Pencarian selesai. 'TextLabel' bernama '" .. targetTeks .. "' tidak ditemukan.")
+    print("PASTIKAN Anda berdiri sangat DEKAT dengan NPC.")
 end
